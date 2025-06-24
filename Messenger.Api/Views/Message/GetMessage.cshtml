@@ -1,0 +1,93 @@
+﻿@using Messenger.App.DTOs
+@model List<GetMessageDTO>
+
+@{
+    ViewData["Title"] = "Messages";
+    Layout = "_Layout";
+}
+
+<h2>Messages</h2>
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="alert alert-info">No messages yet.</div>
+}
+else
+{
+    <div class="message-container">
+        @foreach (var message in Model)
+        {
+            <div class="message @(message.SenderId == ViewBag.SenderId ? "sent" : "received")">
+                <div class="message-header">
+                    <strong>@(message.SenderId == ViewBag.SenderId ? "You" :  message.SenderName)</strong>
+                    <span class="message-date">@message.Date.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                </div>
+                <p>@message.Text</p>
+            </div>
+        }
+    </div>
+}
+
+<form method="post" action="@Url.Action("SendMessage", "Message")">
+    <div class="form-group">
+        <label for="Text">New Message</label>
+        <textarea class="form-control" id="Text" name="Text" placeholder="Type your message..." rows="3" required></textarea>
+    </div>
+    <input type="hidden" name="SenderId" value="@ViewBag.SenderId" />
+    <input type="hidden" name="RecipientId" value="@ViewBag.RecipientId" />
+    <button type="submit" class="btn btn-primary">Send</button>
+</form>
+
+
+<style>
+    .message-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .message {
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-bottom: 15px;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        font-family: Arial, sans-serif;
+    }
+
+    .sent {
+        background-color: #e1f7d5;
+        border-color: #c8e1b0;
+    }
+
+    .received {
+        background-color: #dbe9f4;
+        border-color: #b5cde8;
+    }
+
+    .message-header {
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 5px;
+    }
+
+    .message-date {
+        font-size: 12px;
+        color: #999;
+        float: right;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+</style>

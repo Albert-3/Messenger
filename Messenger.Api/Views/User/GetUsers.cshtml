@@ -1,0 +1,31 @@
+﻿@using Messenger.App.DTOs
+@model List<GetUsersDTO>
+
+@{
+    ViewData["Title"] = "Users List";
+    Layout = "_Layout";
+}
+
+<h2>Users List</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.UserName</td>
+                <td>
+                    <a href="@Url.Action("GetMessage", "Message", new { recipientId = user.Id, senderId = ViewBag.CurrentUserId })" class="btn btn-primary">
+                        View Messages
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
