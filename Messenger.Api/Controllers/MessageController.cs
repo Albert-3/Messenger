@@ -15,7 +15,7 @@ namespace Messenger.Api.Controllers
             _messageService = messageService;
         }
         [HttpPost]
-        public IActionResult SendMessage(MessageSenderDTO messageDTO)
+        public async Task<IActionResult> SendMessage(MessageSenderDTO messageDTO)
         {
             if (messageDTO == null)
             {
@@ -32,16 +32,21 @@ namespace Messenger.Api.Controllers
                 return BadRequest("Invalid sender or recipient ID.");
             }
 
-            var message = _messageService.MessageSender(messageDTO.SenderId, messageDTO.RecipientId, messageDTO.Text );
-            return RedirectToAction("GetMessage", "Message", new { senderId = messageDTO.SenderId, recipientId = messageDTO.RecipientId });
+            await _messageService.MessageSender(messageDTO.SenderId, messageDTO.RecipientId, messageDTO.Text );
+
+            return   RedirectToAction("GetMessage", "Message", 
+                new {
+                    senderId = messageDTO.SenderId,
+                    recipientId = messageDTO.RecipientId
+                });
         }
 
+       
         [HttpGet]
-        public IActionResult GetMessage(Guid senderId, Guid recipientId)
+        public async Task<IActionResult> GetMessage(Guid senderId, Guid recipientId)
         {
 
-            var messages = _messageService.GetMessage(senderId, recipientId);
-
+            var messages = await _messageService.GetMessage(senderId, recipientId);
             if (messages == null || messages.Count == 0)
             {
                 ViewBag.NoMessages = true;

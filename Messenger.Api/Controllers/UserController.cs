@@ -20,9 +20,9 @@ namespace Messenger.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult Login(LoginDTO loginDTO)
+        public async Task<IActionResult> Login(LoginDTO loginDTO)
         {
-            var user = _userService.Login(loginDTO);
+            var user = await _userService.Login(loginDTO);
             if (user != null)
             {
                 return RedirectToAction("GetUsers", "User", new { currentUserId = user.Id });
@@ -36,9 +36,9 @@ namespace Messenger.Api.Controllers
             return View(new RegistrationDTO());
         }
         [HttpPost]
-        public IActionResult Register(RegistrationDTO registrationDTO)
+        public async Task<IActionResult> Register(RegistrationDTO registrationDTO)
         {
-            var validationResult = _userService.Register(registrationDTO);
+            var validationResult = await _userService.Register(registrationDTO);
             if (!validationResult.IsValid)
             {
                 foreach (var error in validationResult.Errors)
@@ -52,9 +52,9 @@ namespace Messenger.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetUsers(Guid currentUserId)
+        public async Task<IActionResult> GetUsers(Guid currentUserId)
         {
-            var users = _userService.GetUsers(currentUserId);
+            var users = await _userService.GetUsers(currentUserId);
 
             if (users == null)
             {

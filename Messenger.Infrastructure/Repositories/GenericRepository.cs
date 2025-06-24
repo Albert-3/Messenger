@@ -17,16 +17,16 @@ namespace Messenger.Infrastructure.Repositories
 
         public async Task<T> GetByIdAsync(Guid id) => await table.FindAsync(id);
 
-        public async Task<int> CreateAsync(T entity)
+        public async Task CreateAsync(T entity)
         {
             table.Add(entity);
-            return await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<int> UpdateAsync(T entity)
+        public async Task<bool> UpdateAsync(T entity)
         {
             table.Update(entity);
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<bool> DeleteAsync(T entity)

@@ -11,7 +11,8 @@ namespace Messenger.App.Services
         {
             _messageRepository = messageRepository;
         }
-        public Message MessageSender(Guid senderId, Guid recipietId, string text)
+
+        public async Task<Message> MessageSender(Guid senderId, Guid recipietId, string text)
         {
             var message = new Message
             {
@@ -20,7 +21,7 @@ namespace Messenger.App.Services
                 Text = text,
                 Date = DateTime.Now,
             };
-            _messageRepository.CreateAsync(message);
+            await _messageRepository.CreateAsync(message);
 
             return message;
         }
@@ -29,28 +30,35 @@ namespace Messenger.App.Services
             var messageSender = await _messageRepository.GetMessage(senderId, recipientId);
             var messageRecipient = await _messageRepository.GetMessage(recipientId, senderId);
 
-                messageSender.Select(message => new GetMessageDTO
-                {
-                    Date = message.Date,
-                    SenderId = message.SenderId,
-                    SenderName = message.Sender.UserName,
-                    Text = message.Text,
-                    RecipientId = message.RecipientId
-                })
-                .ToList();
+            messageSender.Select(message => new GetMessageDTO
+            {
+                Date = message.Date,
+                SenderId = message.SenderId,
+                SenderName = message.Sender.UserName,
+                Text = message.Text,
+                RecipientId = message.RecipientId
+            })
+            .ToList();
 
-                messageRecipient.Select(message => new GetMessageDTO
-                {
-                    Date = message.Date,
-                    SenderId = message.SenderId,
-                    SenderName = message.Sender.UserName,
-                    Text = message.Text,
-                    RecipientId = message.RecipientId
-                })
-                .ToList();
+            messageRecipient.Select(message => new GetMessageDTO
+            {
+                Date = message.Date,
+                SenderId = message.SenderId,
+                SenderName = message.Sender.UserName,
+                Text = message.Text,
+                RecipientId = message.RecipientId
+            })
+            .ToList();
 
-            return  messageSender.Concat(messageRecipient)
-                .OrderBy(m => m.Date)
+            return messageSender.Concat(messageRecipient)
+                .OrderBy(m => m.Date).Select(x => new GetMessageDTO
+                {
+                    Date = x.Date,
+                    SenderId = x.SenderId,
+                    SenderName = x.Sender.UserName,
+                    Text = x.Text,
+                    RecipientId = x.RecipientId
+                })
                 .ToList();
         }
     }

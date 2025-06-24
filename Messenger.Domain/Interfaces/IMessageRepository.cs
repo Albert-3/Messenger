@@ -2,7 +2,7 @@
 {
     public interface IMessageRepository : IGenericRepository<Message>
     {
-        public  Task<List<Message>> GetMessage(Guid senderId, Guid recipientId);
+        public Task<List<Message>> GetMessage(Guid senderId, Guid recipientId);
 
     }
 }

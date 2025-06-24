@@ -21,7 +21,7 @@ namespace Messenger.App.Services
             _validatorLog = validatorLog;
             _passwordHasher = passwordHasher;
         }
-        public ValidationResult Register(RegistrationDTO registrationDTO)
+        public async Task<ValidationResult> Register(RegistrationDTO registrationDTO)
         {
             var validationResult = _validatorReg.Validate(registrationDTO);
             var hashedPassword = _passwordHasher.Generate(registrationDTO.Password);
@@ -30,7 +30,7 @@ namespace Messenger.App.Services
                 return validationResult;
             }
 
-            if (_userRepository.CheckUserExist(registrationDTO.UserName))
+            if ((await _userRepository.CheckUserExist(registrationDTO.UserName)))
             {
                 validationResult.Errors.Add(new("UserName", "User already exists."));
                 return validationResult;
@@ -43,14 +43,14 @@ namespace Messenger.App.Services
                 PhoneNuber = registrationDTO.PhoneNumber,
             };
 
-            _userRepository.CreateAsync(user);
+            await _userRepository.CreateAsync(user);
 
             return validationResult;
         }
-        public User Login(LoginDTO loginDTO)
+        public async Task<User> Login(LoginDTO loginDTO)
         {
             var validationResult = _validatorLog.Validate(loginDTO);
-            var user = _userRepository.GetByUser(loginDTO.UserName);
+            var user = await _userRepository.GetByUser(loginDTO.UserName);
             if (!validationResult.IsValid)
             {
                 return null;
@@ -60,11 +60,11 @@ namespace Messenger.App.Services
                 return user;
             return null;
         }
-        public List<GetUsersDTO> GetUsers(Guid resipentId)
+        public async Task<List<GetUsersDTO>> GetUsers(Guid resipentId)
         {
             var users = new List<GetUsersDTO>();
-
-            foreach (var user in _userRepository.GetUsers(resipentId))
+            var userData = await _userRepository.GetUsers(resipentId);
+            foreach (var user in userData)
             {
                 var userDTO = new GetUsersDTO
                 {

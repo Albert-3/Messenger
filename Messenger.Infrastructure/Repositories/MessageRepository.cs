@@ -17,13 +17,14 @@ namespace Messegner.Infrastructure.Repositories
 
         }
 
-        public async Task<List<Message>> IMessageRepositoryGetMessage(Guid senderId, Guid recipientId)
+        async Task<List<Message>> IMessageRepository.GetMessage(Guid senderId, Guid recipientId)
         {
-            return await  _context.Messages
+            return await _context.Messages
                          .Include(m => m.Sender)
                          .Where(p => p.SenderId == senderId && p.RecipientId == recipientId
                          || p.RecipientId == recipientId && p.SenderId == senderId)
                          .ToListAsync();
         }
     }
+
 }
