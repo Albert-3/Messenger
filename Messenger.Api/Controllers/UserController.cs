@@ -1,7 +1,10 @@
 ﻿using Messenger.App.DTOs;
 using Messenger.App.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-
+using System.Security.Claims;
 
 namespace Messenger.Api.Controllers
 {
@@ -23,13 +26,27 @@ namespace Messenger.Api.Controllers
         public async Task<IActionResult> Login(LoginDTO loginDTO)
         {
             var user = await _userService.Login(loginDTO);
-            if (user != null)
+            if (user == null)
             {
-                return RedirectToAction("GetUsers", "User", new { currentUserId = user.Id });
+                ModelState.AddModelError("", "Eror login , pass");
+                return View(loginDTO);
             }
 
-            return View();
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier.ToString(), user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+             };
+
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme)),
+                new AuthenticationProperties { IsPersistent = true, ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30) });
+
+            return RedirectToAction("GetUsers", "User");
         }
+
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -51,17 +68,25 @@ namespace Messenger.Api.Controllers
             return RedirectToAction("Login", "User");
         }
 
+        [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
         [HttpGet]
-        public async Task<IActionResult> GetUsers(Guid currentUserId)
+        public async Task<IActionResult> GetUsers()
         {
-            var users = await _userService.GetUsers(currentUserId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
+
+            var currentUser = await _userService.GetUserById(Guid.Parse(userId));
+            var users = await _userService.GetUsers(Guid.Parse(userId));
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(); 
+            }
             if (users == null)
             {
                 users = new List<GetUsersDTO>();
             }
 
-            ViewBag.CurrentUserId = currentUserId;
+            ViewBag.CurrentUserId = currentUser.Id;
             return View(users);
         }
     }

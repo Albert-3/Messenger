@@ -5,7 +5,6 @@
     ViewData["Title"] = "Messages";
     Layout = "_Layout";
 }
-
 <h2>Messages</h2>
 
 @if (Model == null || Model.Count == 0)
@@ -17,7 +16,7 @@ else
     <div class="message-container">
         @foreach (var message in Model)
         {
-            <div class="message @(message.SenderId == ViewBag.SenderId ? "sent" : "received")">
+            <div class="message @(message.SenderId == ViewBag.SenderId ? "send" : "received")">
                 <div class="message-header">
                     <strong>@(message.SenderId == ViewBag.SenderId ? "You" :  message.SenderName)</strong>
                     <span class="message-date">@message.Date.ToString("yyyy-MM-dd HH:mm:ss")</span>
@@ -36,8 +35,8 @@ else
     <input type="hidden" name="SenderId" value="@ViewBag.SenderId" />
     <input type="hidden" name="RecipientId" value="@ViewBag.RecipientId" />
     <button type="submit" class="btn btn-primary">Send</button>
+    <a href="@Url.Action("GetUsers", "User")" class="btn btn-secondary">Back</a>
 </form>
-
 
 <style>
     .message-container {
@@ -55,14 +54,14 @@ else
         font-family: Arial, sans-serif;
     }
 
-    .sent {
-        background-color: #e1f7d5;
-        border-color: #c8e1b0;
+    .send {
+        background-color: #c2efa9;
+        border-color: #588131;
     }
 
     .received {
-        background-color: #dbe9f4;
-        border-color: #b5cde8;
+        background-color: #b1cae7;
+        border-color: #244a75;
     }
 
     .message-header {
@@ -73,7 +72,7 @@ else
 
     .message-date {
         font-size: 12px;
-        color: #999;
+        color: #737373;
         float: right;
     }
 

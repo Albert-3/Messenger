@@ -13,13 +13,18 @@ namespace Messenger.App.Services
         private readonly IValidator<RegistrationDTO> _validatorReg;
         private readonly IValidator<LoginDTO> _validatorLog;
         private readonly IPasswordHasher _passwordHasher;
-
-        public UserService(IUserRepository userRepository, IValidator<RegistrationDTO> validator, IValidator<LoginDTO> validatorLog, IPasswordHasher passwordHasher)
+        private readonly IJwtTokenGenerator _tokenGenerator;
+        public UserService(IUserRepository userRepository,
+            IValidator<RegistrationDTO> validator,
+            IValidator<LoginDTO> validatorLog,
+            IPasswordHasher passwordHasher,
+            IJwtTokenGenerator tokenGenerator)
         {
             _validatorReg = validator;
             _userRepository = userRepository;
             _validatorLog = validatorLog;
             _passwordHasher = passwordHasher;
+            _tokenGenerator = tokenGenerator;
         }
         public async Task<ValidationResult> Register(RegistrationDTO registrationDTO)
         {
@@ -53,27 +58,39 @@ namespace Messenger.App.Services
             var user = await _userRepository.GetByUser(loginDTO.UserName);
             if (!validationResult.IsValid)
             {
-                return null;
+                throw new Exception("Invalid login attempt. Please check your credentials.");
             }
             var hasherPass = _passwordHasher.Verify(loginDTO.Password, user.Password);
+            var token = _tokenGenerator.GenerateToken(user);
             if (user != null && hasherPass)
+            {
                 return user;
-            return null;
+            }
+            throw new Exception("Invalid login attempt. Please check your credentials.");
         }
         public async Task<List<GetUsersDTO>> GetUsers(Guid resipentId)
         {
-            var users = new List<GetUsersDTO>();
             var userData = await _userRepository.GetUsers(resipentId);
-            foreach (var user in userData)
-            {
-                var userDTO = new GetUsersDTO
+            return userData
+                .Select(user => new GetUsersDTO
                 {
                     UserName = user.UserName,
-                    Id = user.Id,
-                };
-                users.Add(userDTO);
-            }
-            return users;
+                    Id = user.Id
+                }).ToList();
+        }
+        public async Task<GetUsersDTO> GetUserById(Guid guid)
+        {
+
+            var users = new List<GetUsersDTO>();
+
+            var userData = await _userRepository.GetUserById(guid);
+
+            var userDTO = new GetUsersDTO
+            {
+                UserName = userData.UserName,
+                Id = userData.Id,
+            };
+            return userDTO;
         }
     }
 }

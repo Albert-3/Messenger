@@ -7,7 +7,7 @@ namespace Messenger.App.Services
     public class MessageService
     {
         public IMessageRepository _messageRepository;
-        public MessageService(IMessageRepository messageRepository)
+        public MessageService(IMessageRepository messageRepository )
         {
             _messageRepository = messageRepository;
         }
@@ -50,7 +50,7 @@ namespace Messenger.App.Services
             })
             .ToList();
 
-            return messageSender.Concat(messageRecipient)
+            return  messageSender.Concat(messageRecipient)
                 .OrderBy(m => m.Date).Select(x => new GetMessageDTO
                 {
                     Date = x.Date,

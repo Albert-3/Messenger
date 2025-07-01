@@ -28,6 +28,7 @@
         <input type="password" class="form-control" id="RepeatPassword" name="RepeatPassword"  />
     </div>
     <button type="submit" class="btn btn-primary">Register</button>
+    <a href="@Url.Action("Login", "User")" class="btn btn-secondary">Back</a>
 </form>
 
 @if (!ViewData.ModelState.IsValid)

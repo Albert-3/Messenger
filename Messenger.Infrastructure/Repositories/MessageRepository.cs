@@ -1,5 +1,4 @@
-﻿using Messaner.Infrastructure.Repositories;
-using Messenger.Domain;
+﻿using Messenger.Domain;
 using Messenger.Domain.Interface;
 using Messenger.Infrastructure.Data;
 using Messenger.Infrastructure.Repositories;
@@ -23,7 +22,7 @@ namespace Messegner.Infrastructure.Repositories
                          .Include(m => m.Sender)
                          .Where(p => p.SenderId == senderId && p.RecipientId == recipientId
                          || p.RecipientId == recipientId && p.SenderId == senderId)
-                         .ToListAsync();
+                         .AsNoTracking().ToListAsync();
         }
     }
 
