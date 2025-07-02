@@ -3,6 +3,7 @@ using Messaner.Infrastructure.Repositories;
 using Messegner.Infrastructure.Repositories;
 using Messenger.App.Authentication;
 using Messenger.App.DTOs;
+using Messenger.App.Hubs;
 using Messenger.App.Services;
 using Messenger.App.Validators;
 using Messenger.Domain.Interface;
@@ -10,6 +11,7 @@ using Messenger.Domain.Interfaces;
 using Messenger.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -26,6 +28,7 @@ namespace Messenger.Api
             builder.Services.AddControllersWithViews();
             builder.Services.AddMemoryCache();
             builder.Services.AddSession();
+            builder.Services.AddSignalR();
 
             // DB Context
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -42,13 +45,14 @@ namespace Messenger.Api
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
+
             // JWT Configuration from appsettings.json
             builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
 
             var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
             var key = Encoding.UTF8.GetBytes(jwtOptions.Key);
 
-            // ✅ Authentication (Only one AddAuthentication!)
+            //  Authentication (Only one AddAuthentication!)
             builder.Services.AddAuthentication(options =>
             {
                 // Set default scheme to Cookies for browser requests
@@ -82,6 +86,7 @@ namespace Messenger.Api
 
             // Build App
             var app = builder.Build();
+            app.MapHub<ChatHub>("/chatHub");
 
             // Middleware
             app.UseHttpsRedirection();

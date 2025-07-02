@@ -14,43 +14,31 @@ namespace Messenger.Api.Controllers
         {
             _messageService = messageService;
         }
+
         [HttpPost]
-        public async Task<IActionResult> SendMessage(MessageSenderDTO messageDTO)
+        public async Task<IActionResult> SendMessage([FromBody] MessageSenderDTO model)
         {
-            if (messageDTO == null)
-            {
-                return BadRequest("Message data is null.");
-            }
+            if (model == null || string.IsNullOrWhiteSpace(model.Text))
+                return BadRequest("Message is empty");
 
-            if (string.IsNullOrWhiteSpace(messageDTO.Text))
-            {
-                return BadRequest("Message text is empty.");
-            }
+            await _messageService.SendMessageAsync(model.SenderId, model.RecipientId, model.Text);
 
-            if (messageDTO.SenderId == Guid.Empty || messageDTO.RecipientId == Guid.Empty)
-            {
-                return BadRequest("Invalid sender or recipient ID.");
-            }
-
-            await _messageService.MessageSender(messageDTO.SenderId, messageDTO.RecipientId, messageDTO.Text );
-
-            return   RedirectToAction("GetMessage", "Message", 
-                new {
-                    senderId = messageDTO.SenderId,
-                    recipientId = messageDTO.RecipientId
-                });
+            return Ok();
         }
 
-       
+
+
         [HttpGet]
         public async Task<IActionResult> GetMessage(Guid senderId, Guid recipientId)
         {
 
-            var messages = await _messageService.GetMessage(senderId, recipientId);
+            var messages = await _messageService.GetMessagesAsync(senderId, recipientId);
+
             if (messages == null || messages.Count == 0)
             {
                 ViewBag.NoMessages = true;
             }
+
             ViewBag.SenderId = senderId;
             ViewBag.RecipientId = recipientId;
 

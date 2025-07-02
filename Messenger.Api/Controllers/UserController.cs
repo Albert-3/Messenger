@@ -28,7 +28,7 @@ namespace Messenger.Api.Controllers
             var user = await _userService.Login(loginDTO);
             if (user == null)
             {
-                ModelState.AddModelError("", "Eror login , pass");
+                ModelState.AddModelError("", "Incorrect Login or Password");
                 return View(loginDTO);
             }
 
@@ -52,10 +52,12 @@ namespace Messenger.Api.Controllers
         {
             return View(new RegistrationDTO());
         }
+
         [HttpPost]
         public async Task<IActionResult> Register(RegistrationDTO registrationDTO)
         {
             var validationResult = await _userService.Register(registrationDTO);
+
             if (!validationResult.IsValid)
             {
                 foreach (var error in validationResult.Errors)
@@ -87,6 +89,7 @@ namespace Messenger.Api.Controllers
             }
 
             ViewBag.CurrentUserId = currentUser.Id;
+
             return View(users);
         }
     }

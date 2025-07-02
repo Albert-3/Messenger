@@ -6,7 +6,12 @@
     Layout = "_Layout";
 }
 
-<h2>Users List</h2>
+<div class="header-bar">
+    <h2>Users</h2>
+    <form method="get" action="@Url.Action("Login", "User")">
+        <button type="submit" class="btn btn-secondary">Singn out</button>
+    </form>
+</div>
 
 <table class="table">
     <thead>
@@ -29,6 +34,12 @@
         }
     </tbody>
 </table>
-<form method="get" action="@Url.Action("Login", "User")">
-    <button type="submit" class="btn btn-secondary">Logout</button>
-</form>
+
+<style>
+    .header-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+</style>
