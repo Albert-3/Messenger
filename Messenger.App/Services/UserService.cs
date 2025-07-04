@@ -55,18 +55,22 @@ namespace Messenger.App.Services
         public async Task<User> Login(LoginDTO loginDTO)
         {
             var validationResult = _validatorLog.Validate(loginDTO);
-            var user = await _userRepository.GetByUser(loginDTO.UserName);
-            if (!validationResult.IsValid)
+            if (!validationResult.IsValid )
             {
-                throw new Exception("Invalid login attempt. Please check your credentials.");
+                return null;
+            }
+            var user = await _userRepository.GetByUser(loginDTO.UserName);
+            if(user == null)
+            {
+                return null;
             }
             var hasherPass = _passwordHasher.Verify(loginDTO.Password, user.Password);
-            var token = _tokenGenerator.GenerateToken(user);
-            if (user != null && hasherPass)
+            if (!hasherPass)
             {
                 return user;
             }
-            throw new Exception("Invalid login attempt. Please check your credentials.");
+            var token = _tokenGenerator.GenerateToken(user);
+            return user;
         }
         public async Task<List<GetUsersDTO>> GetUsers(Guid resipentId)
         {

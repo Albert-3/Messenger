@@ -2,91 +2,235 @@
 @model List<GetMessageDTO>
 
 @{
-    ViewData["Title"] = "Messages";
+    ViewData["Title"] = "Message";
     Layout = "_Layout";
 }
-<h2>Messages</h2>
-
-@if (Model == null || Model.Count == 0)
+@if (!ViewData.ModelState.IsValid)
 {
-    <div class="alert alert-info">No messages yet.</div>
-}
-else
-{
-    <div class="message-container">
-        @foreach (var message in Model)
+    <div class="alert alert-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
         {
-            <div class="message @(message.SenderId == ViewBag.SenderId ? "send" : "received")">
-                <div class="message-header">
-                    <strong>@(message.SenderId == ViewBag.SenderId ? "You" :  message.SenderName)</strong>
-                    <span class="message-date">@message.Date.ToString("yyyy-MM-dd HH:mm:ss")</span>
-                </div>
-                <p>@message.Text</p>
-            </div>
+            <div>@error.ErrorMessage</div>
         }
     </div>
 }
+<div class="chat-container container mt-4">
+    <div class="chat-box card shadow-sm">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Chat</h5>
+            <a href="@Url.Action("GetUsers", "User")" class="btn btn-light btn-sm">Back</a>
+        </div>
 
-<form method="post" action="@Url.Action("SendMessage", "Message")">
-    <div class="form-group">
-        <label for="Text">New Message</label>
-        <textarea class="form-control" id="Text" name="Text" placeholder="Type your message..." rows="3" required></textarea>
+        <div id="messageContainer" class="card-body chat-messages">
+            @if (Model == null || !Model.Any())
+            {
+                <div class="alert alert-info text-center">No messages yet.</div>
+            }
+            else
+            {
+                foreach (var message in Model)
+                {
+                    var isSender = message.SenderId == ViewBag.SenderId;
+                    <div class="d-flex @(isSender ? "justify-content-end" : "justify-content-start") mb-3">
+                        <div class="message-bubble @(isSender ? "sent" : "received") shadow-sm">
+                            <div class="message-header">
+                                <span class="sender-name @(isSender ? "you" : "other")">
+                                    @(isSender ? "You" : message.SenderName)
+                                </span>
+                                <span class="message-date @(isSender ? "you" : "other")"
+                                      title="@message.Date.ToString("F")">
+                                    @message.Date.ToString("HH:mm")
+                                </span>
+                            </div>
+                            <div class="message-text">@message.Text</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+
+        <div class="card-footer bg-white p-3">
+            <div class="input-group">
+                <textarea id="messageInput" maxlength="300" placeholder="Type your message..." rows="3"></textarea>
+                <button class="btn btn-primary" id="sendMessageButton" type="button">Send</button>
+            </div>
+            <small id="charsLeft" class="text-muted mt-1">300 characters left</small>
+        </div>
     </div>
-    <input type="hidden" name="SenderId" value="@ViewBag.SenderId" />
-    <input type="hidden" name="RecipientId" value="@ViewBag.RecipientId" />
-    <button type="submit" class="btn btn-primary">Send</button>
-    <a href="@Url.Action("GetUsers", "User")" class="btn btn-secondary">Back</a>
-</form>
+</div>
+
+<input type="hidden" id="senderId" value="@ViewBag.SenderId" />
+<input type="hidden" id="recipientId" value="@ViewBag.RecipientId" />
 
 <style>
-    .message-container {
-        max-width: 800px;
-        margin: 0 auto;
+    #messageInput {
+        width: 570px;
+        max-width: 100%;
+        height: 55px;
+        resize: none;
+        font-size: 1rem;
+        padding: 8px 12px;
+    }
+
+    .chat-container {
+        max-width: 700px;
+    }
+
+    .chat-box {
+        height: 650px;
+        display: flex;
+        flex-direction: column;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .chat-messages {
+        flex-grow: 1;
+        overflow-y: auto;
         padding: 20px;
+        background: #fefefe;
     }
 
-    .message {
-        border: 1px solid #ddd;
-        padding: 10px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        font-family: Arial, sans-serif;
+    .message-bubble {
+        max-width: 65%;
+        font-size: 1rem;
+        padding: 10px 15px;
+        border-radius: 12px;
+        background-color: #e9ecef;
+        word-wrap: break-word;
     }
 
-    .send {
-        background-color: #c2efa9;
-        border-color: #588131;
+    .sent {
+        background-color: #d0e7ff;
     }
 
     .received {
-        background-color: #b1cae7;
-        border-color: #244a75;
+        background-color: #e2e3e5; 
     }
 
     .message-header {
-        font-size: 14px;
-        color: #555;
-        margin-bottom: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 6px;
     }
+
+    .sender-name {
+        font-weight: bold;
+        font-size: 1rem;
+        color: black;
+        margin-bottom: 2px;
+    }
+
+        .sender-name.other {
+            color: black;
+        }
 
     .message-date {
-        font-size: 12px;
-        color: #737373;
-        float: right;
+        font-size: 0.8rem;
+        white-space: nowrap;
     }
 
-    .form-group {
-        margin-bottom: 20px;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
+        .message-date.you {
+            color: black
         }
+
+        .message-date.other {
+            color: black;
+        }
+
+    .message-text {
+        white-space: pre-wrap;
+    }
 </style>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    <script>
+        const senderId = document.getElementById("senderId").value;
+        const recipientId = document.getElementById("recipientId").value;
+        const messageInput = document.getElementById("messageInput");
+        const messageContainer = document.getElementById("messageContainer");
+        const charsLeft = document.getElementById("charsLeft");
+
+        const maxLength = 300;
+        messageInput.addEventListener('input', () => {
+            const remaining = maxLength - messageInput.value.length;
+            charsLeft.textContent = `${remaining} characters left`;
+        });
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (senderName, messageText, timestamp, senderGuid) {
+            const isSender = senderGuid === senderId;
+            const messageDiv = document.createElement("div");
+            messageDiv.className = `d-flex ${isSender ? "justify-content-end" : "justify-content-start"} mb-3`;
+
+            const bubble = document.createElement("div");
+            bubble.className = `message-bubble ${isSender ? "sent" : "received"} shadow-sm`;
+
+            const header = document.createElement("div");
+            header.className = "message-header";
+
+            const nameSpan = document.createElement("span");
+            nameSpan.className = `sender-name ${isSender ? "you" : "other"}`;
+            nameSpan.textContent = isSender ? "You" : senderName;
+
+            const dateSpan = document.createElement("span");
+            dateSpan.className = `message-date ${isSender ? "you" : "other"}`;
+            const date = new Date(timestamp);
+            dateSpan.textContent = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            header.appendChild(nameSpan);
+            header.appendChild(dateSpan);
+
+            const textDiv = document.createElement("div");
+            textDiv.className = "message-text";
+            textDiv.textContent = messageText;
+
+            bubble.appendChild(header);
+            bubble.appendChild(textDiv);
+            messageDiv.appendChild(bubble);
+            messageContainer.appendChild(messageDiv);
+
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        });
+
+        connection.start().then(function () {
+            const room = [senderId, recipientId].sort().join("_");
+            connection.invoke("JoinChat", { userName: senderId, chatRoom: room });
+        }).catch(err => console.error(err.toString()));
+
+        document.getElementById("sendMessageButton").addEventListener("click", async function () {
+            const text = messageInput.value.trim();
+            if (!text) return;
+
+            const response = await fetch("/Message/SendMessage", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ senderId, recipientId, text })
+            });
+
+            if (response.ok) {
+                messageInput.value = "";
+                messageInput.focus();
+            } else {
+                alert("Failed to send message.");
+            }
+        });
+
+        messageInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById("sendMessageButton").click();
+            }
+        });
+
+        window.addEventListener('load', () => {
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        });
+    </script>
+}
