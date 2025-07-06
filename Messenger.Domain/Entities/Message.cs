@@ -5,7 +5,6 @@
         public Guid Id { get; set; }
         public Guid SenderId { get; set; }
         public User Sender { get; set; }
-
         public User Recipient { get; set; }
         public Guid RecipientId { get; set; }
         //Todo: if type is string add max lenght restriction on configuration

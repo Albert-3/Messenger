@@ -37,17 +37,19 @@ namespace Messenger.Api
 
             // Dependency Injection
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<EmailService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddSingleton<IPasswordHasher, PasswordHasher>();
             builder.Services.AddScoped<IValidator<RegistrationDTO>, RegistrationValidator>();
             builder.Services.AddScoped<IValidator<LoginDTO>, LoginValidator>();
-            builder.Services.AddScoped<MessageService>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
 
+            builder.Services.AddScoped<MessageService>();
             // JWT Configuration from appsettings.json
             builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("JwtOptions"));
+            // Configuration binding
 
             var jwtOptions = builder.Configuration.GetSection("JwtOptions").Get<JwtOptions>();
             var key = Encoding.UTF8.GetBytes(jwtOptions.Key);

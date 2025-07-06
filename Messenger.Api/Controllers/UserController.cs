@@ -11,9 +11,11 @@ namespace Messenger.Api.Controllers
     public class UserController : Controller
     {
         public readonly UserService _userService;
-        public UserController(UserService userService)
+        public readonly EmailService _emailService;
+        public UserController(UserService userService ,EmailService emailService)
         {
             _userService = userService;
+            _emailService = emailService;
         }
 
         [HttpGet]
@@ -66,6 +68,10 @@ namespace Messenger.Api.Controllers
                 }
                 return View(registrationDTO);
             }
+            string subject = "Welcome ChatHUB!";
+            string body = $"Hello, {registrationDTO.UserName}! Thank you for registering.";
+
+            await _emailService.SendEmailAsync(registrationDTO.Email, subject, body);
 
             return RedirectToAction("Login", "User");
         }

@@ -46,6 +46,7 @@ namespace Messenger.App.Services
                 UserName = registrationDTO.UserName,
                 Password = hashedPassword,
                 PhoneNuber = registrationDTO.PhoneNumber,
+                Email = registrationDTO.Email,
             };
 
             await _userRepository.CreateAsync(user);

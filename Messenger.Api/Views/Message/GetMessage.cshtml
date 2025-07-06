@@ -22,11 +22,7 @@
         </div>
 
         <div id="messageContainer" class="card-body chat-messages">
-            @if (Model == null || !Model.Any())
-            {
-                <div class="alert alert-info text-center">No messages yet.</div>
-            }
-            else
+            @if (Model != null || Model.Any())
             {
                 foreach (var message in Model)
                 {
