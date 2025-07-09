@@ -11,7 +11,7 @@ namespace Messenger.App.Services
         {
             _configuration = configuration;
         }
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        public async Task SendEmailAsync(string toEmail, string subject, string body, CancellationToken cancellation)
         {
             // Here you would implement the logic to send an email.
             // This is a placeholder implementation.
@@ -27,7 +27,7 @@ namespace Messenger.App.Services
                 {
                     client.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPassword);
                     client.EnableSsl = true; // Use SSL if required
-                    await client.SendMailAsync(message);
+                    await client.SendMailAsync(message ,cancellation);
                 }
             }
         }

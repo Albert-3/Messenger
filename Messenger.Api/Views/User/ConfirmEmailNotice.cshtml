@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "Email Confirmation Sent";
+}
+
+<style>
+    body {
+        background: #e7f1fc;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .confirm-card {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        width: 90%;
+        max-width: 600px;
+        padding: 40px;
+        text-align: center;
+    }
+
+    .icon-animation {
+        font-size: 4rem;
+        color: #0d6efd;
+        animation: pulse 1.5s infinite;
+    }
+
+    @@keyframes pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+</style>
+
+<div class="confirm-card">
+    <h2 class="text-success mb-4">Գրանցումը հաջողվեց ✅</h2>
+
+    <p class="h5 mb-3">
+        Բարև, <strong>@ViewBag.UserName</strong>!
+    </p>
+
+    <p class="mb-3">
+        Հաստատման նամակը ուղարկվել է հասցեին՝<br>
+        <strong class="text-primary">@ViewBag.Email</strong>
+    </p>
+
+    <p class="text-muted">
+        Խնդրում ենք ստուգել ձեր էլ․ փոստը և սեղմել նամակում առկա հղումը՝ հաշիվը ակտիվացնելու համար։
+    </p>
+
+    <div class="mt-4">
+        <i class="bi bi-envelope-check icon-animation"></i>
+    </div>
+</div>

@@ -1,9 +1,11 @@
 ﻿using Messenger.App.DTOs;
 using Messenger.App.Services;
+using Messenger.Domain;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using System.Security.Claims;
 
 namespace Messenger.Api.Controllers
@@ -12,10 +14,14 @@ namespace Messenger.Api.Controllers
     {
         public readonly UserService _userService;
         public readonly EmailService _emailService;
-        public UserController(UserService userService ,EmailService emailService)
+        public readonly IMemoryCache _cache;
+        public UserController(UserService userService,
+            EmailService emailService,
+            IMemoryCache cache)
         {
             _userService = userService;
             _emailService = emailService;
+            _cache = cache;
         }
 
         [HttpGet]
@@ -31,6 +37,11 @@ namespace Messenger.Api.Controllers
             if (user == null)
             {
                 ModelState.AddModelError("", "Incorrect Login or Password");
+                return View(loginDTO);
+            }
+            if (_cache.TryGetValue($"Token_{user.UserName}", out _))
+            {
+                ModelState.AddModelError("", "Your email is not confirmed yet. Please check your inbox.");
                 return View(loginDTO);
             }
 
@@ -54,26 +65,26 @@ namespace Messenger.Api.Controllers
         {
             return View(new RegistrationDTO());
         }
-
         [HttpPost]
-        public async Task<IActionResult> Register(RegistrationDTO registrationDTO)
+        public async Task<IActionResult> Register(RegistrationDTO registrationDTO, CancellationToken cancellation = default)
         {
             var validationResult = await _userService.Register(registrationDTO);
-
             if (!validationResult.IsValid)
             {
                 foreach (var error in validationResult.Errors)
-                {
                     ModelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                }
+
                 return View(registrationDTO);
             }
-            string subject = "Welcome ChatHUB!";
-            string body = $"Hello, {registrationDTO.UserName}! Thank you for registering.";
 
-            await _emailService.SendEmailAsync(registrationDTO.Email, subject, body);
+            var token = Guid.NewGuid().ToString();
 
-            return RedirectToAction("Login", "User");
+            _cache.Set(token, registrationDTO, TimeSpan.FromHours(15));
+            _cache.Set($"Token_{registrationDTO.UserName}", registrationDTO, TimeSpan.FromHours(15));
+
+            await _userService.SendConfirmationEmailAsync(registrationDTO, token, cancellation);
+
+            return RedirectToAction("ConfirmEmailNotice", new { email = registrationDTO.Email, userName = registrationDTO.UserName });
         }
 
         [Authorize(AuthenticationSchemes = CookieAuthenticationDefaults.AuthenticationScheme)]
@@ -87,7 +98,7 @@ namespace Messenger.Api.Controllers
             var users = await _userService.GetUsers(Guid.Parse(userId));
             if (string.IsNullOrEmpty(userId))
             {
-                return Unauthorized(); 
+                return Unauthorized();
             }
             if (users == null)
             {
@@ -98,5 +109,29 @@ namespace Messenger.Api.Controllers
 
             return View(users);
         }
+        [HttpGet]
+        public async Task<IActionResult> ConfirmEmail(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return BadRequest("Token is missing or invalid.");
+            }
+
+            var result = await _userService.ConfirmEmailAsync(token);
+            if (!result)
+            {
+                return NotFound("Invalid or expired token.");
+            }
+
+            return RedirectToAction("Login");
+        }
+        [HttpGet]
+        public IActionResult ConfirmEmailNotice(string email, string userName)
+        {
+            ViewBag.Email = email;
+            ViewBag.UserName = userName;
+            return View();
+        }
+
     }
 }

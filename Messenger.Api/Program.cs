@@ -44,7 +44,8 @@ namespace Messenger.Api
             builder.Services.AddScoped<IValidator<LoginDTO>, LoginValidator>();
             builder.Services.AddScoped<IMessageRepository, MessageRepository>();
             builder.Services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
-
+            builder.Services.AddScoped<IEmailService, EmailService>();
+            builder.Services.AddScoped<IGenerateChatRoomName, ChatHub>();
 
             builder.Services.AddScoped<MessageService>();
             // JWT Configuration from appsettings.json

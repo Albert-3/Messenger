@@ -22,7 +22,7 @@
         </div>
 
         <div id="messageContainer" class="card-body chat-messages">
-            @if (Model != null || Model.Any())
+            @if (Model != null && Model.Any())
             {
                 foreach (var message in Model)
                 {
@@ -102,7 +102,7 @@
     }
 
     .received {
-        background-color: #e2e3e5; 
+        background-color: #e2e3e5;
     }
 
     .message-header {
@@ -160,7 +160,7 @@
             .withUrl("/chatHub")
             .build();
 
-        connection.on("ReceiveMessage", function (senderName, messageText, timestamp, senderGuid) {
+            connection.on("ReceiveMessage", function (senderGuid, senderName, messageText, timestamp) {
             const isSender = senderGuid === senderId;
             const messageDiv = document.createElement("div");
             messageDiv.className = `d-flex ${isSender ? "justify-content-end" : "justify-content-start"} mb-3`;
@@ -194,13 +194,13 @@
 
             messageContainer.scrollTop = messageContainer.scrollHeight;
         });
-
         connection.start().then(function () {
-            const room = [senderId, recipientId].sort().join("_");
-            connection.invoke("JoinChat", { userName: senderId, chatRoom: room });
+            connection.invoke("JoinChat", {
+                senderId: senderId,
+                recipientId: recipientId
+            });
         }).catch(err => console.error(err.toString()));
-
-        document.getElementById("sendMessageButton").addEventListener("click", async function () {
+                document.getElementById("sendMessageButton").addEventListener("click", async function () {
             const text = messageInput.value.trim();
             if (!text) return;
 

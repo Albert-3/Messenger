@@ -2,6 +2,7 @@
 {
     public interface IChatClient
     {
-        public Task ReceiveMessage(string senderName, string messageText , DateTime dateTime ,Guid guid);
+        public Task ReceiveMessage(Guid senderIdstring, string senderName, string messageText, DateTime dateTime);
+
     }
 }

@@ -8,20 +8,18 @@ namespace Messenger.Api.Controllers
     public class MessageController : Controller
     {
         private readonly MessageService _messageService;
-
-
         public MessageController(MessageService messageService)
         {
             _messageService = messageService;
         }
 
         [HttpPost]
-        public async Task<IActionResult> SendMessage([FromBody] MessageSenderDTO model)
+        public async Task<IActionResult> SendMessage([FromBody] MessageSenderDTO enderDto)
         {
-            if (model == null || string.IsNullOrWhiteSpace(model.Text))
+            if (enderDto == null || string.IsNullOrWhiteSpace(enderDto.Text))
                 return BadRequest("Message is empty");
-
-            await _messageService.SendMessageAsync(model.SenderId, model.RecipientId, model.Text);
+            string chatRoom = _messageService.GenerateChatRoomName(enderDto.SenderId, enderDto.RecipientId);
+            await _messageService.SendMessageAsync(chatRoom ,enderDto.SenderId, enderDto.RecipientId, enderDto.Text);
 
             return Ok();
         }
@@ -44,6 +42,5 @@ namespace Messenger.Api.Controllers
 
             return View(messages);
         }
-
     }
 }
